@@ -68,16 +68,6 @@ const changeHP = (player) => {
     }
 
     playerLife.style.width = player.hp + '%'
-
-    if (player.hp <= 0) {
-        if (player.player == 1) {
-            arenas.appendChild(playerWin(player2.name))
-        } else {
-            arenas.appendChild(playerWin(player1.name))
-        }
-
-        randomBtn.disabled = true
-    }
 }
 
 const getRandom = () => {
@@ -86,10 +76,10 @@ const getRandom = () => {
 }
 
 const playerWin = (name) => {
-    const loseTitle = createElement('div', 'loseTitle')
-    loseTitle.innerText = name + ' win'
+    const winTitle = createElement('div', 'loseTitle')
+    winTitle.innerText = name + ' win'
 
-    return loseTitle
+    return winTitle
 }
 
 arenas.appendChild(createPlayer1(player1))
@@ -98,4 +88,14 @@ arenas.appendChild(createPlayer1(player2))
 randomBtn.addEventListener('click', () => {
     changeHP(player1)
     changeHP(player2)
+
+    if (player1.hp <= 0 || player2.hp <= 0) {
+        if (player1.hp <= 0) {
+            arenas.appendChild(playerWin(player2.name))
+        } else if (player2.hp <= 0) {
+            arenas.appendChild(playerWin(player1.name))
+        }
+
+        randomBtn.disabled = true
+    }
 })

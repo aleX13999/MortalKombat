@@ -1,6 +1,22 @@
 const arenas = document.querySelector('.arenas')
 const randomBtn = document.querySelector('.button')
 
+const changeHP = function(random) {
+    if (this.hp - random < 0) {
+        this.hp = 0
+    } else {
+        this.hp -= random
+    }
+}
+
+const elHP = function() {
+    return document.querySelector('.player' + this.player + ' .life')
+}
+
+const renderHP = function(playerLife) {
+    playerLife.style.width = this.hp + '%'
+}
+
 const player1 = {
     player: 1,
     name: 'SUB-ZERO',
@@ -10,6 +26,9 @@ const player1 = {
     attack: function() {
         console.log(`${this.name} Fight...`)
     },
+    changeHP: changeHP,
+    elHP: elHP,
+    renderHP: renderHP,
 }
 
 const player2 = {
@@ -21,6 +40,9 @@ const player2 = {
     attack: function() {
         console.log(`${this.name} Fight...`)
     },
+    changeHP: changeHP,
+    elHP: elHP,
+    renderHP: renderHP,
 }
 
 const createElement = (tag, className) => {
@@ -32,7 +54,7 @@ const createElement = (tag, className) => {
     return newTag
 }
 
-const createPlayer1 = (playerObj) => {
+const createPlayer = function(playerObj) {
     const player = createElement('div', `player${playerObj.player}`)
     const progressbar = createElement('div', 'progressbar')
     const character = createElement('div', 'character')
@@ -55,47 +77,54 @@ const createPlayer1 = (playerObj) => {
     return player
 }
 
-const changeHP = (player) => {
-    const playerLife = document.querySelector(
-        '.player' + player.player + ' .life'
-    )
-
-    const random = getRandom()
-    if (player.hp - random < 0) {
-        player.hp = 0
-    } else {
-        player.hp -= random
-    }
-
-    playerLife.style.width = player.hp + '%'
-}
-
-const getRandom = () => {
-    const random = 1 + Math.random() * 20
+const getRandom = (number) => {
+    const random = Math.round(1 + Math.random() * number)
     return random
 }
 
 const playerWin = (name) => {
-    const winTitle = createElement('div', 'loseTitle')
-    winTitle.innerText = name + ' win'
+    const winTitle = createElement('div', 'winTitle')
+    if (name) {
+        winTitle.innerText = name + ' win'
+    } else {
+        winTitle.innerText = 'draw'
+    }
 
     return winTitle
 }
 
-arenas.appendChild(createPlayer1(player1))
-arenas.appendChild(createPlayer1(player2))
+const createReloadButton = function() {
+    const reloadWrap = createElement('div', 'reloadWrap')
+    const reloadBtn = createElement('button', 'button')
+    reloadBtn.innerText = 'Restart'
+    reloadBtn.addEventListener('click', function() {
+        window.location.reload()
+    })
+    reloadWrap.appendChild(reloadBtn)
+
+    return reloadWrap
+}
+
+arenas.appendChild(createPlayer(player1))
+arenas.appendChild(createPlayer(player2))
 
 randomBtn.addEventListener('click', () => {
-    changeHP(player1)
-    changeHP(player2)
+    player1.changeHP(getRandom(20))
+    player1.renderHP(player1.elHP())
 
-    if (player1.hp <= 0 || player2.hp <= 0) {
-        if (player1.hp <= 0) {
-            arenas.appendChild(playerWin(player2.name))
-        } else if (player2.hp <= 0) {
-            arenas.appendChild(playerWin(player1.name))
-        }
+    player2.changeHP(getRandom(20))
+    player2.renderHP(player2.elHP())
 
+    if (player1.hp === 0 || player2.hp === 0) {
         randomBtn.disabled = true
+        arenas.appendChild(createReloadButton())
+    }
+
+    if (player1.hp === 0 && player2.hp === 0) {
+        arenas.appendChild(playerWin())
+    } else if (player1.hp === 0) {
+        arenas.appendChild(playerWin(player2.name))
+    } else if (player2.hp === 0) {
+        arenas.appendChild(playerWin(player1.name))
     }
 })

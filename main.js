@@ -13,8 +13,8 @@ const elHP = function() {
     return document.querySelector('.player' + this.player + ' .life')
 }
 
-const renderHP = function(playerLife) {
-    playerLife.style.width = this.hp + '%'
+const renderHP = function() {
+    this.elHP().style.width = this.hp + '%'
 }
 
 const player1 = {
@@ -110,10 +110,10 @@ arenas.appendChild(createPlayer(player2))
 
 randomBtn.addEventListener('click', () => {
     player1.changeHP(getRandom(20))
-    player1.renderHP(player1.elHP())
+    player1.renderHP()
 
     player2.changeHP(getRandom(20))
-    player2.renderHP(player2.elHP())
+    player2.renderHP()
 
     if (player1.hp === 0 || player2.hp === 0) {
         randomBtn.disabled = true

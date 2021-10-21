@@ -1,5 +1,6 @@
 const arenas = document.querySelector('.arenas')
 const randomBtn = document.querySelector('.button')
+const formControl = document.querySelector('.control')
 
 const changeHP = function(random) {
     if (this.hp - random < 0) {
@@ -17,18 +18,34 @@ const renderHP = function() {
     this.elHP().style.width = this.hp + '%'
 }
 
+//Проверяем, если игрок не попал в защиту, тогда отнимаем жизни
+const checkedAtt = function(playerAtt1, playerAtt2) {
+    if (playerAtt1.hit != playerAtt2.defence) {
+        this.changeHP(playerAtt1.value)
+        this.renderHP()
+    }
+}
+
+const attack = function() {}
+
+const HIT = {
+    head: 30,
+    body: 25,
+    foot: 20,
+}
+const ATTACK = ['head', 'body', 'foot']
+
 const player1 = {
     player: 1,
     name: 'SUB-ZERO',
     hp: 100,
     img: 'http://reactmarathon-api.herokuapp.com/assets/subzero.gif',
     weapon: ['Холод'],
-    attack: function() {
-        console.log(`${this.name} Fight...`)
-    },
-    changeHP: changeHP,
-    elHP: elHP,
-    renderHP: renderHP,
+    attack,
+    changeHP,
+    elHP,
+    renderHP,
+    checkedAtt,
 }
 
 const player2 = {
@@ -37,12 +54,11 @@ const player2 = {
     hp: 100,
     img: 'http://reactmarathon-api.herokuapp.com/assets/sonya.gif',
     weapon: ['Меч'],
-    attack: function() {
-        console.log(`${this.name} Fight...`)
-    },
-    changeHP: changeHP,
-    elHP: elHP,
-    renderHP: renderHP,
+    attack,
+    changeHP,
+    elHP,
+    renderHP,
+    checkedAtt,
 }
 
 const createElement = (tag, className) => {
@@ -78,8 +94,7 @@ const createPlayer = function(playerObj) {
 }
 
 const getRandom = (number) => {
-    const random = Math.round(1 + Math.random() * number)
-    return random
+    return Math.round(1 + Math.random() * (number - 1))
 }
 
 const playerWin = (name) => {
@@ -96,7 +111,7 @@ const playerWin = (name) => {
 const createReloadButton = function() {
     const reloadWrap = createElement('div', 'reloadWrap')
     const reloadBtn = createElement('button', 'button')
-    reloadBtn.innerText = 'Restart'
+    reloadBtn.innerText = 'Reload'
     reloadBtn.addEventListener('click', function() {
         window.location.reload()
     })
@@ -105,15 +120,39 @@ const createReloadButton = function() {
     return reloadWrap
 }
 
+const enemyAttack = function() {
+    const hit = ATTACK[getRandom(3) - 1]
+    const defence = ATTACK[getRandom(3) - 1]
+
+    return {
+        value: getRandom(HIT[hit]),
+        hit,
+        defence,
+    }
+}
+
 arenas.appendChild(createPlayer(player1))
 arenas.appendChild(createPlayer(player2))
 
-randomBtn.addEventListener('click', () => {
-    player1.changeHP(getRandom(20))
-    player1.renderHP()
+formControl.addEventListener('submit', function(e) {
+    e.preventDefault()
+    const enemyAtt = enemyAttack()
+    const ourAtt = {}
 
-    player2.changeHP(getRandom(20))
-    player2.renderHP()
+    for (let item of formControl.elements) {
+        if (item.checked && item.name === 'hit') {
+            ourAtt.value = getRandom(HIT[item.value])
+            ourAtt.hit = item.value
+        }
+        if (item.checked && item.name === 'defence') {
+            ourAtt.defence = item.value
+        }
+
+        item.checked = false
+    }
+
+    player1.checkedAtt(enemyAtt, ourAtt)
+    player2.checkedAtt(ourAtt, enemyAtt)
 
     if (player1.hp === 0 || player2.hp === 0) {
         randomBtn.disabled = true

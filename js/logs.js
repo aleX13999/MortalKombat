@@ -46,30 +46,29 @@ export const generateLogs = function(type, player1, player2, value) {
     let text = ''
     const time = getTime()
 
-    const { name: namePlayer1 } = player1
-    const { hp: hpPlayer2, name: namePlayer2 } = player2
-
     switch (type) {
         case 'start':
             text = LOGS[type]
-                .replace('[player1]', namePlayer1)
-                .replace('[player2]', namePlayer2)
+                .replace('[player1]', player1.name)
+                .replace('[player2]', player2.name)
                 .replace('[time]', time)
             break
         case 'end':
             text = LOGS[type][getRandom(LOGS[type].length) - 1]
-                .replace('[playerWins]', namePlayer1)
-                .replace('[playerLose]', namePlayer2)
+                .replace('[playerWins]', player1.name)
+                .replace('[playerLose]', player2.name)
             break
         case 'hit':
             text = `${time} - ${LOGS[type][getRandom(LOGS[type].length) - 1]
-        .replace('[playerKick]', namePlayer1)
-        .replace('[playerDefence]', namePlayer2)} -${value} [${hpPlayer2}/100]`
+        .replace('[playerKick]', player1.name)
+        .replace('[playerDefence]', player2.name)} -${value} [${
+        player2.hp
+      }/100]`
             break
         case 'defence':
             text = `${time} - ${LOGS[type][getRandom(LOGS[type].length) - 1]
-        .replace('[playerKick]', namePlayer1)
-        .replace('[playerDefence]', namePlayer2)}`
+        .replace('[playerKick]', player1.name)
+        .replace('[playerDefence]', player2.name)}`
             break
         case 'draw':
             text = LOGS[type]

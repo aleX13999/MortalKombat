@@ -1,4 +1,4 @@
-import { player1, player2 } from './playerClass.js'
+import { Player } from './playerClass.js'
 import { arenas, formControl, randomBtn } from './queryElements.js'
 import { createElement, createReloadButton, getRandom } from './utils.js'
 import { generateLogs } from './logs.js'
@@ -8,6 +8,9 @@ export class Game {
         //console.log(this)
     }
 
+    player1
+    player2
+
     HIT = {
         head: 30,
         body: 25,
@@ -16,11 +19,30 @@ export class Game {
 
     ATTACK = ['head', 'body', 'foot']
 
-    start = () => {
-        arenas.appendChild(this.createPlayer(player1))
-        arenas.appendChild(this.createPlayer(player2))
+    getPlayers = async() =>
+        fetch('https://reactmarathon-api.herokuapp.com/api/mk/players').then(
+            (res) => res.json()
+        )
 
-        generateLogs('start', player1, player2)
+    start = async() => {
+        const players = await this.getPlayers()
+
+        this.player1 = new Player({
+            ...players[getRandom(players.length) - 1],
+            player: 1,
+        })
+        this.player2 = new Player({
+            ...players[getRandom(players.length) - 1],
+            player: 2,
+        })
+
+        arenas.appendChild(this.createPlayer(this.player1))
+        arenas.appendChild(this.createPlayer(this.player2))
+
+        formControl.addEventListener('submit', (e) => {
+            e.preventDefault()
+            this.fight()
+        })
     }
 
     createPlayer({ player, hp, name, img }) {
@@ -46,32 +68,44 @@ export class Game {
         return playerNew
     }
 
-    fight() {
+    fight = async() => {
+        const playerAtt = this.playerAttack()
+
+        const attacks = await fetch(
+            'http://reactmarathon-api.herokuapp.com/api/mk/player/fight', {
+                method: 'POST',
+                body: JSON.stringify({
+                    hit: playerAtt.hit,
+                    defence: playerAtt.defence,
+                }),
+            }
+        ).then((response) => response.json())
+
         const {
-            hit: hitEnemy,
-            defence: defenceEnemy,
-            value: valueEnemy,
-        } = this.enemyAttack()
-        const {
+            value: valueOur,
             hit: hitOur,
             defence: defenceOur,
-            value: valueOur,
-        } = this.playerAttack()
+        } = attacks.player1
+        const {
+            value: valueEnemy,
+            hit: hitEnemy,
+            defence: defenceEnemy,
+        } = attacks.player2
 
         if (hitOur !== defenceEnemy) {
-            player2.changeHP(valueOur)
-            player2.renderHP()
-            generateLogs('hit', player1, player2, valueOur)
+            this.player2.changeHP(valueOur)
+            this.player2.renderHP()
+            generateLogs('hit', this.player1, this.player2, valueOur)
         } else {
-            generateLogs('defence', player1, player2)
+            generateLogs('defence', this.player1, this.player2)
         }
 
         if (hitEnemy !== defenceOur) {
-            player1.changeHP(valueEnemy)
-            player1.renderHP()
-            generateLogs('hit', player2, player1, valueEnemy)
+            this.player1.changeHP(valueEnemy)
+            this.player1.renderHP()
+            generateLogs('hit', this.player2, this.player1, valueEnemy)
         } else {
-            generateLogs('defence', player2, player1)
+            generateLogs('defence', this.player2, this.player1)
         }
 
         this.showResults()
@@ -95,7 +129,6 @@ export class Game {
         for (let { name, value, checked }
             of formControl.elements) {
             if (checked && name === 'hit') {
-                attack.value = getRandom(this.HIT[value])
                 attack.hit = value
             }
             if (checked && name === 'defence') {
@@ -110,8 +143,8 @@ export class Game {
     }
 
     showResults() {
-        const { hp: hpPlayer1, name: namePlayer1 } = player1
-        const { hp: hpPlayer2, name: namePlayer2 } = player2
+        const { hp: hpPlayer1, name: namePlayer1 } = this.player1
+        const { hp: hpPlayer2, name: namePlayer2 } = this.player2
 
         if (hpPlayer1 === 0 || hpPlayer2 === 0) {
             randomBtn.disabled = true
@@ -123,10 +156,10 @@ export class Game {
             generateLogs('draw')
         } else if (hpPlayer1 === 0) {
             arenas.appendChild(this.playerWin(namePlayer2))
-            generateLogs('end', player2, player1)
+            generateLogs('end', this.player2, this.player1)
         } else if (hpPlayer2 === 0) {
             arenas.appendChild(this.playerWin(namePlayer1))
-            generateLogs('end', player1, player2)
+            generateLogs('end', this.player1, this.player2)
         }
     }
 
@@ -141,10 +174,3 @@ export class Game {
         return winTitle
     }
 }
-
-formControl.addEventListener('submit', (e) => {
-    e.preventDefault()
-
-    const game = new Game()
-    game.fight()
-})

@@ -1,6 +1,3 @@
-import { generateLogs } from './logs.js'
-import { arenas, randomBtn } from './queryElements.js'
-
 export const createElement = (tag, className) => {
     const newTag = document.createElement(tag)
     if (className) {

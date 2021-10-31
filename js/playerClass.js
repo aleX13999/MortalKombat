@@ -1,9 +1,9 @@
 export class Player {
     constructor(props) {
-        this.id = props.id
+        this.player = props.player
         this.name = props.name
         this.hp = props.hp
-        this.avatar = props.avatar
+        this.img = props.img
     }
 
     changeHP = (random) => {

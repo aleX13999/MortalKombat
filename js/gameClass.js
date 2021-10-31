@@ -1,4 +1,4 @@
-import { player1, player2 } from './playerClass.js'
+import { Player } from './playerClass.js'
 import { arenas, formControl, randomBtn } from './queryElements.js'
 import { createElement, createReloadButton, getRandom } from './utils.js'
 import { generateLogs } from './logs.js'
@@ -8,6 +8,9 @@ export class Game {
         //console.log(this)
     }
 
+    player1
+    player2
+
     HIT = {
         head: 30,
         body: 25,
@@ -16,15 +19,13 @@ export class Game {
 
     ATTACK = ['head', 'body', 'foot']
 
-    start = () => {
-        arenas.appendChild(this.createPlayer(player1))
-        arenas.appendChild(this.createPlayer(player2))
+    getPlayers = async() =>
+        fetch('https://reactmarathon-api.herokuapp.com/api/mk/players').then(
+            (res) => res.json()
+        )
 
-        generateLogs('start', player1, player2)
-    }
-
-    createPlayer({ player, hp, name, img }) {
-        const playerNew = createElement('div', `player${player}`)
+    createPlayer({ id, hp, name, avatar }) {
+        const playerNew = createElement('div', `player${id}`)
         const progressbar = createElement('div', 'progressbar')
         const character = createElement('div', 'character')
         const life = createElement('div', 'life')
@@ -33,7 +34,7 @@ export class Game {
 
         life.style.width = hp + '%'
         nameNew.innerText = name
-        imgNew.src = img
+        imgNew.src = avatar
 
         progressbar.appendChild(nameNew)
         progressbar.appendChild(life)
@@ -44,6 +45,24 @@ export class Game {
         playerNew.appendChild(character)
 
         return playerNew
+    }
+
+    start = async() => {
+        const players = await this.getPlayers()
+
+        const p1 = players[getRandom(players.length) - 1]
+        const p2 = players[getRandom(players.length) - 1]
+
+        this.player1 = new Player(p1)
+        this.player2 = new Player(p2)
+
+        console.log(this.player1)
+        console.log(this.player2)
+
+        formControl.addEventListener('submit', (e) => {
+            e.preventDefault()
+            this.fight()
+        })
     }
 
     fight() {
@@ -141,10 +160,3 @@ export class Game {
         return winTitle
     }
 }
-
-formControl.addEventListener('submit', (e) => {
-    e.preventDefault()
-
-    const game = new Game()
-    game.fight()
-})

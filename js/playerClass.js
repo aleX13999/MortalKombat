@@ -1,9 +1,9 @@
-class Player {
+export class Player {
     constructor(props) {
-        this.player = props.player
+        this.id = props.id
         this.name = props.name
         this.hp = props.hp
-        this.img = props.img
+        this.avatar = props.avatar
     }
 
     changeHP = (random) => {
@@ -18,17 +18,3 @@ class Player {
 
     renderHP = () => (this.elHP().style.width = this.hp + '%')
 }
-
-export const player1 = new Player({
-    player: 1,
-    name: 'SUB-ZERO',
-    hp: 100,
-    img: 'http://reactmarathon-api.herokuapp.com/assets/subzero.gif',
-})
-
-export const player2 = new Player({
-    player: 2,
-    name: 'SONYA',
-    hp: 100,
-    img: 'http://reactmarathon-api.herokuapp.com/assets/sonya.gif',
-})
